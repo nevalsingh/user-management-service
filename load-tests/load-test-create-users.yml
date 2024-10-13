@@ -1,0 +1,25 @@
+config:
+  target: "http://localhost:8080" # Edit based on env and hosting
+  phases:
+    - duration: 1
+      arrivalRate: 1000
+      rampTo: 1000
+  payload:
+    path: "users.csv"
+    fields:
+      - "username"
+      - "email"
+      - "password"
+    unique: true
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - flow:
+      - post:
+          url: "/api/users"
+          json:
+            username: "{{ username }}"
+            email: "{{ email }}"
+            password: "{{ password }}"

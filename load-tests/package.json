@@ -1,0 +1,9 @@
+{
+  "name": "user-management-load-tests",
+    "scripts": {
+    "load-test:create-user": "artillery run load-test-create-users.yml"
+  },
+  "devDependencies": {
+    "artillery": "^2.0.20"
+  }
+}
