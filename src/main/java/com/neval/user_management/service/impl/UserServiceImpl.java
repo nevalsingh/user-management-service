@@ -68,6 +68,11 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void deleteUser(UUID userId) {
+        userRepository.deleteById(userId);
+    }
+
     // Utility method to hash passwords Move to utility folder
     private String hashPassword(String password) {
         try {

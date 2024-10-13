@@ -9,7 +9,8 @@ spec:
   ports:
     - port: 5432
       targetPort: 5432
-      nodePort: 30032 # This is very much setup for localhost ideally I would do this to a deployed resource
+      nodePort: 30032
+      # This is very much setup for localhost ideally I would do this to a deployed resource
 
 #spec:
 #  type: ClusterIP
@@ -19,3 +20,4 @@ spec:
 #    - protocol: TCP
 #      port: 5432
 #      targetPort: 5432
+# Or use type: LoadBalancer

@@ -48,4 +48,10 @@ public class UserController {
         List<UserResponse> users = userService.searchUsersByUsername(username);
         return ResponseEntity.ok(users);
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+        userService.deleteUser(userId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

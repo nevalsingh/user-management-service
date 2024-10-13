@@ -29,6 +29,8 @@ spec:
               value: postgres
             - name: SPRING_DATASOURCE_PASSWORD
               value: test
+            - name: CORS_ALLOWED_ORIGINS
+              value: 'http://localhost:30000'
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness

@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:8080" # Edit based on env and hosting
+  target: "http://localhost:30033" # Edit based on env and hosting
   phases:
     - duration: 1
       arrivalRate: 1000
