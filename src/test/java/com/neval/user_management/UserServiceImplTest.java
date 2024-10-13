@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import java.util.Optional;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -22,6 +24,7 @@ class UserServiceImplTest {
 
     private UserRequest userRequest;
     private User user;
+    private UUID userId;
 
     @BeforeEach
     void setUp() {
@@ -33,7 +36,10 @@ class UserServiceImplTest {
         userRequest.setEmail("lewham@gmail.com");
         userRequest.setPassword("password123");
 
+        userId  = UUID.randomUUID();
+
         user = new User();
+        user.setId(userId);
         user.setUsername("LewisHamilton");
         user.setEmail("lewham@gmail.com");
         user.setPassword("hashed_password");
@@ -61,12 +67,11 @@ class UserServiceImplTest {
     @Test
     void testUpdateUser_WithPasswordChange() {
         // Arrange
-        userRequest.setPassword("new_password");
-        when(userRepository.findByUsername(userRequest.getUsername())).thenReturn(Optional.of(user));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         // Act
-        userService.updateUser(userRequest);
+        userService.updateUser(userId, userRequest);
 
         // Assert
         verify(userRepository).save(user);
@@ -77,12 +82,12 @@ class UserServiceImplTest {
     @Test
     void testUpdateUser_WithoutPasswordChange() {
         // Arrange
-        userRequest.setPassword(null); // Simulate no password change
-        when(userRepository.findByUsername(userRequest.getUsername())).thenReturn(Optional.of(user));
+        userRequest.setPassword(null);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         // Act
-        userService.updateUser(userRequest);
+        userService.updateUser(userId, userRequest);
 
         // Assert
         verify(userRepository).save(user);

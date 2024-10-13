@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -29,8 +32,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(UserRequest userRequest) {
-        User existingUser = userRepository.findByUsername(userRequest.getUsername())
+    public void updateUser(UUID userId, UserRequest userRequest) {
+        User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         existingUser.setUsername(userRequest.getUsername());
@@ -50,6 +53,19 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return new UserResponse(user.getId(),user.getUsername(),user.getEmail());
+    }
+
+    @Override
+    public long getUserCount() {
+        return userRepository.count();
+    }
+
+    @Override
+    public List<UserResponse> searchUsersByUsername(String username) {
+        List<User> users = userRepository.findByUsernameContainingIgnoreCase(username);
+        return users.stream()
+                .map(this::mapToUserResponse) // Convert each User to UserResponse
+                .collect(Collectors.toList());
     }
 
     // Utility method to hash passwords Move to utility folder
@@ -73,5 +89,12 @@ public class UserServiceImpl implements UserService {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    private UserResponse mapToUserResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail());
     }
 }

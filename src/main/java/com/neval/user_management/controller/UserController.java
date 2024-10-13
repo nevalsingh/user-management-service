@@ -7,8 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
@@ -23,9 +26,9 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping
-    public ResponseEntity<Void> updateUser(@RequestBody UserRequest userRequest) {
-        userService.updateUser(userRequest);
+    @PutMapping("/{userId}")
+    public ResponseEntity<Void> updateUser(@PathVariable UUID userId, @RequestBody UserRequest userRequest) {
+        userService.updateUser(userId, userRequest);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -33,5 +36,16 @@ public class UserController {
     public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username) {
         UserResponse userResponse = userService.getUserByUsername(username);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/count")
+    public long getUserCount() {
+        return userService.getUserCount();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResponse>> searchUsers(@RequestParam String username) { //TODO: Future Enhance Paginate
+        List<UserResponse> users = userService.searchUsersByUsername(username);
+        return ResponseEntity.ok(users);
     }
 }
