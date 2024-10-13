@@ -5,6 +5,8 @@ import com.neval.user_management.model.User.UserResponse;
 import com.neval.user_management.repository.UserRepository;
 import com.neval.user_management.repository.entities.User;
 import com.neval.user_management.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     private final UserRepository userRepository;
 
     public UserServiceImpl(UserRepository userRepository) {
@@ -24,63 +28,107 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(UserRequest userRequest) {
-        User user = new User();
-        user.setUsername(userRequest.getUsername());
-        user.setEmail(userRequest.getEmail());
-        user.setPassword(hashPassword(userRequest.getPassword()));
-        userRepository.save(user);
+        try {
+            logger.info("Creating user with username: {}", userRequest.getUsername());
+
+            User user = new User();
+            user.setUsername(userRequest.getUsername());
+            user.setEmail(userRequest.getEmail());
+            user.setPassword(hashPassword(userRequest.getPassword()));
+
+            userRepository.save(user);
+            logger.info("User created successfully: {}", user.getId());
+        } catch (Exception ex) {
+            logger.error("Failed to create user: {}", userRequest.getUsername(), ex);
+            throw new RuntimeException("Failed to create user", ex);
+        }
     }
 
     @Override
     public void updateUser(UUID userId, UserRequest userRequest) {
-        User existingUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            logger.info("Updating user with ID: {}", userId);
+            User existingUser = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        existingUser.setUsername(userRequest.getUsername());
-        existingUser.setEmail(userRequest.getEmail());
+            existingUser.setUsername(userRequest.getUsername());
+            existingUser.setEmail(userRequest.getEmail());
 
-        // Only update when password has value
-        if (userRequest.getPassword() != null && !userRequest.getPassword().isEmpty()) {
-            existingUser.setPassword(hashPassword(userRequest.getPassword()));
+            if (userRequest.getPassword() != null && !userRequest.getPassword().isEmpty()) {
+                existingUser.setPassword(hashPassword(userRequest.getPassword()));
+            }
+
+            userRepository.save(existingUser);
+            logger.info("User updated successfully: {}", existingUser.getId());
+        } catch (Exception ex) {
+            logger.error("Failed to update user with ID: {}", userId, ex);
+            throw new RuntimeException("Failed to update user", ex);
         }
-
-        userRepository.save(existingUser);
     }
 
     @Override
     public UserResponse getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            logger.info("Fetching user with username: {}", username);
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return new UserResponse(user.getId(),user.getUsername(),user.getEmail());
+            logger.info("User fetched successfully: {}", user.getId());
+            return new UserResponse(user.getId(), user.getUsername(), user.getEmail());
+        } catch (Exception ex) {
+            logger.error("Failed to fetch user by username: {}", username, ex);
+            throw new RuntimeException("Failed to fetch user by username", ex);
+        }
     }
 
     @Override
     public long getUserCount() {
-        return userRepository.count();
+        try {
+            logger.info("Fetching user count");
+            return userRepository.count();
+        } catch (Exception ex) {
+            logger.error("Failed to fetch user count", ex);
+            throw new RuntimeException("Failed to get user count", ex);
+        }
     }
 
     @Override
     public List<UserResponse> searchUsersByUsername(String username) {
-        List<User> users = userRepository.findByUsernameContainingIgnoreCase(username);
-        return users.stream()
-                .map(this::mapToUserResponse) // Convert each User to UserResponse
-                .collect(Collectors.toList());
+        try {
+            logger.info("Searching users with username containing: {}", username);
+
+            List<User> users = userRepository.findByUsernameContainingIgnoreCase(username);
+
+            return users.stream()
+                    .map(this::mapToUserResponse)
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            logger.error("Failed to search users by username: {}", username, ex);
+            throw new RuntimeException("Failed to search users by username", ex);
+        }
     }
 
     @Override
     public void deleteUser(UUID userId) {
-        userRepository.deleteById(userId);
+        try {
+            logger.info("Deleting user with ID: {}", userId);
+
+            userRepository.deleteById(userId);
+
+            logger.info("User deleted successfully: {}", userId);
+        } catch (Exception ex) {
+            logger.error("Failed to delete user with ID: {}", userId, ex);
+            throw new RuntimeException("Failed to delete user", ex);
+        }
     }
 
-    // Utility method to hash passwords Move to utility folder
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedhash = digest.digest(
-                    password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            byte[] encodedhash = digest.digest(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
             return bytesToHex(encodedhash);
         } catch (NoSuchAlgorithmException ex) {
+            logger.error("Error hashing password", ex);
             throw new RuntimeException("Error hashing password", ex);
         }
     }
@@ -97,9 +145,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponse mapToUserResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail());
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail());
     }
 }
