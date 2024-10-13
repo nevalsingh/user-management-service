@@ -1,9 +1,12 @@
 {
   "name": "user-management-load-tests",
-    "scripts": {
+  "scripts": {
     "load-test:create-user": "artillery run load-test-create-users.yml"
   },
   "devDependencies": {
     "artillery": "^2.0.20"
+  },
+  "dependencies": {
+    "uuid": "^10.0.0"
   }
 }

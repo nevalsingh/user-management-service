@@ -1,22 +1,16 @@
 config:
-  target: "http://localhost:30033" # Edit based on env and hosting
+  target: "http://localhost:30033" # Edit based on env and hosting http://localhost:8080 for non-K8s
   phases:
     - duration: 1
       arrivalRate: 1000
       rampTo: 1000
-  payload:
-    path: "users.csv"
-    fields:
-      - "username"
-      - "email"
-      - "password"
-    unique: true
   defaults:
     headers:
       Content-Type: "application/json"
-
+  processor: "./mockData.js"
 scenarios:
   - flow:
+      - function: generateUniqueUser
       - post:
           url: "/api/users"
           json:
