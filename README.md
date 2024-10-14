@@ -37,3 +37,9 @@ docker compose up
 ```
 kubectl apply -f k8s/  
 ```
+
+### Load Testing (Artillery)
+```
+cd load-tests
+npm run load-tests/load-test:create-user
+```
